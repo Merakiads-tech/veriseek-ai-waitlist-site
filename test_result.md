@@ -169,13 +169,16 @@ frontend:
     implemented: true
     working: false
     file: "https://join-veriseek.preview.emergentagent.com"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
         - working: false
           agent: "testing"
           comment: "❌ Survey section partially working. 'HELP US BUILD BETTER' eyebrow found correctly. Survey questions are present and Q1 works (can select options and proceed). However, survey flow gets stuck after Q2 - the Next button becomes disabled when no option is selected, and the survey doesn't complete the full 5-question flow to reach the email entry step. The survey structure is there but the interactive flow needs fixing."
+        - working: false
+          agent: "testing"
+          comment: "❌ RE-TESTED: Survey flow confirmed broken at Q3. Q1 and Q2 work perfectly - can select options and advance. Q3 selection causes Next button to become disabled, survey jumps back to hero section instead of advancing to Q4. Cannot verify Q4 'Amazon/Walmart/e-commerce' text, email step 'Almost done — you're making an impact.' headline, or success screen 'You're on the list!' because survey never completes. JavaScript logic for question advancement appears to have a bug after Q2."
 
   - task: "Why VeriSeek (Our Mission) Section"
     implemented: true
@@ -254,3 +257,5 @@ test_plan:
 agent_communication:
     - agent: "testing"
       message: "Comprehensive testing completed for VeriSeek waitlist landing page. Most functionality working correctly including all email capture flows, styling, and mobile responsiveness. Main issue: Survey flow gets stuck after Q2 and doesn't complete the full 5-question sequence to reach email entry. All other sections working as expected. Console shows only minor React DevTools info message and one network error for Cloudflare RUM which doesn't affect functionality."
+    - agent: "testing"
+      message: "RE-TESTED Survey Flow: Confirmed critical issue - survey breaks at Q3. Q1 ('5–10 minutes, quick scan' selection) and Q2 ('Never — my purchases always match expectations' selection) work perfectly with proper teal border selection indicators and Next button advancement. However, after Q3 option selection, Next button becomes disabled and survey jumps back to hero section instead of advancing to Q4. Cannot verify Q4 'Amazon/Walmart/e-commerce product pages' text requirement, email step 'Almost done — you're making an impact.' headline, or success screen 'You're on the list!' with teal checkmark. JavaScript logic for question progression has a bug after Q2. Survey structure exists but flow is broken."

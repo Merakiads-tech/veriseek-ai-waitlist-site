@@ -711,33 +711,26 @@ function SurveySection() {
   // step: 0..4 = questions, 5 = email, 6 = success
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState([null, null, null, null, null]);
-  const [transitioning, setTransitioning] = useState(false);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
   const selectOption = (opt) => {
-    const next = [...answers];
-    next[step] = opt;
-    setAnswers(next);
+    setAnswers((prev) => {
+      const next = [...prev];
+      next[step] = opt;
+      return next;
+    });
   };
 
   const goNext = () => {
     if (step < 5 && answers[step] == null) return;
-    setTransitioning(true);
-    setTimeout(() => {
-      setStep((s) => s + 1);
-      setTransitioning(false);
-    }, 180);
+    setStep((s) => Math.min(s + 1, 6));
   };
 
   const goBack = () => {
     if (step === 0) return;
-    setTransitioning(true);
-    setTimeout(() => {
-      setStep((s) => s - 1);
-      setTransitioning(false);
-    }, 180);
+    setStep((s) => Math.max(s - 1, 0));
   };
 
   async function submitSurvey(e) {
@@ -820,7 +813,7 @@ function SurveySection() {
         <div className="relative">
           {/* Question steps */}
           {step < 5 && (
-            <div className={transitioning ? 'vs-q-out' : 'vs-q-in'}>
+            <div key={`q-${step}`} className="vs-q-in" style={{ opacity: 1, transform: 'translateY(0)' }}>
               <div className="text-[13px] mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>
                 Question {step + 1} of 5
               </div>
@@ -902,7 +895,7 @@ function SurveySection() {
 
           {/* Email step */}
           {step === 5 && (
-            <div className={transitioning ? 'vs-q-out' : 'vs-q-in'}>
+            <div className="vs-q-in" style={{ opacity: 1, transform: 'translateY(0)' }}>
               <h3
                 className="font-serif-display text-white mb-4 text-center"
                 style={{ fontSize: 'clamp(22px, 3vw, 30px)', lineHeight: 1.25 }}
