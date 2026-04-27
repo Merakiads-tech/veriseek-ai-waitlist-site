@@ -37,38 +37,42 @@ function useReveal() {
   }, []);
 }
 
-/* ---------- Logo (uses uploaded PNG on dark bgs, wordmark fallback on light) ---------- */
-function Logo({ variant = 'dark' }) {
-  // On dark navy background — just use the uploaded PNG
-  if (variant === 'dark') {
-    return (
-      <div className="flex items-center">
-        <img
-          src={LOGO_URL}
-          alt="VeriSeek"
-          className="h-8 md:h-9 w-auto select-none"
-          draggable={false}
-        />
-      </div>
-    );
-  }
-  // Light background fallback — SVG wordmark
+/* ---------- Logo (SVG wordmark works on any bg; PNG fallback on dark if needed) ---------- */
+function Logo({ variant = 'light', size = 'md' }) {
+  const isDark = variant === 'dark';
+  const veriColor = isDark ? '#FFFFFF' : '#003049';
+  const sizes = {
+    sm: { icon: 22, text: 18 },
+    md: { icon: 26, text: 22 },
+    lg: { icon: 32, text: 26 },
+  };
+  const s = sizes[size] || sizes.md;
   return (
-    <div className="flex items-center gap-2">
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <circle cx="14" cy="14" r="11" stroke="#01B5B6" strokeWidth="2.5" />
-        <path d="M9.5 14.5l3.2 3.2 6.8-6.8" stroke="#003049" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <line x1="22" y1="22" x2="28" y2="28" stroke="#01B5B6" strokeWidth="2.5" strokeLinecap="round" />
+    <div className="flex items-center gap-2 select-none" aria-label="VeriSeek">
+      <svg width={s.icon} height={s.icon} viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="13.5" cy="13.5" r="10.5" stroke="#003049" strokeWidth="2.3" fill="none" />
+        <path
+          d="M8.8 13.8 l3.4 3.4 l7.2 -7.2"
+          stroke="#01B5B6"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        <line x1="21.2" y1="21.2" x2="27.5" y2="27.5" stroke="#01B5B6" strokeWidth="2.6" strokeLinecap="round" />
       </svg>
-      <span className="text-[20px] font-bold tracking-tight">
-        <span style={{ color: '#003049' }}>Veri</span>
+      <span
+        className="font-bold tracking-tight leading-none"
+        style={{ fontSize: s.text }}
+      >
+        <span style={{ color: veriColor }}>Veri</span>
         <span style={{ color: '#01B5B6' }}>Seek</span>
       </span>
     </div>
   );
 }
 
-/* ---------- Section 1: Sticky Nav (capsule) ---------- */
+/* ---------- Section 1: Sticky Nav (light capsule, matches reference) ---------- */
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -96,28 +100,34 @@ function Nav() {
   return (
     <div className="fixed top-3 md:top-5 left-0 right-0 z-50 flex justify-center px-3">
       <nav
-        className={`w-full max-w-6xl rounded-full border transition-all duration-300 ${
-          scrolled ? 'vs-nav-scrolled' : ''
-        }`}
+        className="w-full max-w-6xl rounded-full transition-all duration-300"
         style={{
-          background: scrolled ? 'rgba(0,48,73,0.85)' : '#003049',
-          borderColor: 'rgba(255,255,255,0.12)',
+          background: scrolled ? 'rgba(232,250,250,0.92)' : '#F2FBFB',
+          border: '1.5px solid #01B5B6',
+          boxShadow: scrolled
+            ? '0 8px 28px rgba(0,48,73,0.12)'
+            : '0 4px 16px rgba(0,48,73,0.06)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
         }}
       >
         <div className="flex items-center justify-between pl-4 pr-2 md:pl-6 md:pr-2 py-2">
           {/* Logo */}
           <a href="#home" onClick={scrollTo('home')} className="shrink-0">
-            <Logo variant="dark" />
+            <Logo variant="light" size="md" />
           </a>
 
           {/* Center links (desktop) */}
-          <ul className="hidden lg:flex items-center gap-7 text-[14px]" style={{ color: 'rgba(255,255,255,0.85)' }}>
+          <ul className="hidden lg:flex items-center gap-7 text-[14px]" style={{ color: '#003049' }}>
             {navLinks.map((l) => (
               <li key={l.id}>
                 <a
                   href={`#${l.id}`}
                   onClick={scrollTo(l.id)}
-                  className="hover:text-white transition-colors"
+                  className="transition-colors font-medium"
+                  style={{ color: '#003049' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#01B5B6')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#003049')}
                 >
                   {l.label}
                 </a>
@@ -130,8 +140,8 @@ function Nav() {
             <a
               href="#survey"
               onClick={scrollTo('survey')}
-              className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 md:px-5 py-2.5 text-[13px] font-semibold text-white"
-              style={{ background: '#0D1F2D', border: '1px solid rgba(255,255,255,0.08)' }}
+              className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 md:px-5 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: '#003049' }}
             >
               Get Started Free <span aria-hidden>→</span>
             </a>
@@ -166,23 +176,26 @@ function EmailCTA({ placeholder, buttonLabel, source, tone = 'dark', successMsg 
     setStatus('loading');
     setMessage('');
     try {
-      const { error } = await supabase
-        .from('waitlist_emails')
-        .insert([{ email: email.trim().toLowerCase(), source }]);
-      if (error) {
-        if (error.code === '23505' || /duplicate/i.test(error.message)) {
-          setStatus('duplicate');
-          setMessage("You're already on the list!");
-          return;
-        }
-        throw error;
+      const res = await fetch('/api/waitlist/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), source }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || 'Something went wrong. Please try again.');
+      }
+      if (data.duplicate) {
+        setStatus('duplicate');
+        setMessage(data.message || "You're already on the list!");
+        return;
       }
       setStatus('success');
       setMessage(successMsg || "You're on the list! We'll be in touch at launch.");
     } catch (err) {
       console.error(err);
       setStatus('error');
-      setMessage('Something went wrong. Please try again.');
+      setMessage(err?.message || 'Something went wrong. Please try again.');
     }
   }
 
@@ -368,14 +381,26 @@ function StatsStrip() {
   const n3 = useCountUp(152, 1500, go);
   const n4 = useCountUp(11, 1500, go);
 
-  const Stat = ({ value, label, isLast }) => (
+  const Stat = ({ value, label }) => (
     <div
-      className="flex-1 px-4 md:px-6 py-6 text-center"
-      style={{ borderRight: isLast ? 'none' : '1px solid #E8F0F0' }}
+      className="flex-1 px-4 md:px-6 py-7 text-center rounded-2xl transition-all duration-200"
+      style={{ border: '1px solid transparent' }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = '#F0FAFA';
+        e.currentTarget.style.borderColor = '#01B5B6';
+        e.currentTarget.style.transform = 'translateY(-3px)';
+        e.currentTarget.style.boxShadow = '0 8px 22px rgba(1,181,182,0.12)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent';
+        e.currentTarget.style.borderColor = 'transparent';
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
     >
       <div
         className="font-serif-display mb-2"
-        style={{ fontSize: 'clamp(30px, 4vw, 44px)', color: '#01B5B6', lineHeight: 1 }}
+        style={{ fontSize: 'clamp(34px, 4.4vw, 52px)', color: '#01B5B6', lineHeight: 1 }}
       >
         {value}
       </div>
@@ -386,20 +411,23 @@ function StatsStrip() {
   );
 
   return (
-    <section id="stats" className="bg-white py-20 md:py-24 px-4" ref={ref}>
+    <section id="stats" className="bg-white pt-20 md:pt-24 pb-0 px-4" ref={ref}>
       <div className="max-w-6xl mx-auto">
-        <p
-          className="vs-fade text-center text-[12px] font-semibold tracking-[0.2em] mb-10"
-          style={{ color: '#01B5B6' }}
+        <h2
+          className="vs-fade text-center font-bold tracking-[0.22em] mb-12"
+          style={{
+            color: '#01B5B6',
+            fontSize: 'clamp(18px, 2.4vw, 26px)',
+          }}
         >
           THE NUMBERS DON&apos;T LIE
-        </p>
+        </h2>
 
-        <div className="vs-fade grid grid-cols-2 md:grid-cols-4">
+        <div className="vs-fade grid grid-cols-2 md:grid-cols-4 gap-2">
           <Stat value={`${n1}%`} label="of online reviews show signs of manipulation" />
           <Stat value="4 in 5" label="shoppers regret a purchase after trusting reviews" />
           <Stat value={`$${n3}B`} label="lost annually to misleading product claims" />
-          <Stat value={`${n4} min`} label="wasted per purchase researching reviews" isLast />
+          <Stat value={`${n4} min`} label="wasted per purchase researching reviews" />
         </div>
 
         <div
@@ -662,7 +690,7 @@ const QUESTIONS = [
   {
     q: 'Where do you usually check reviews before buying? Choose your primary source.',
     options: [
-      'Amazon / Flipkart / e-commerce product pages',
+      'Amazon / Walmart / e-commerce product pages',
       'Google reviews or search results',
       'Social media / YouTube / influencer recommendations',
       'Dedicated review sites (G2, Trustpilot, Reddit, etc.)',
@@ -723,23 +751,26 @@ function SurveySection() {
     setStatus('loading');
     setErrorMsg('');
     try {
-      const payload = {
-        email: email.trim().toLowerCase(),
-        q1_answer: answers[0],
-        q2_answer: answers[1],
-        q3_answer: answers[2],
-        q4_answer: answers[3],
-        q5_answer: answers[4],
-        source: 'waitlist_page',
-      };
-      const { error } = await supabase.from('waitlist_responses').insert([payload]);
-      if (error) throw error;
+      const res = await fetch('/api/waitlist/survey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          q1: answers[0],
+          q2: answers[1],
+          q3: answers[2],
+          q4: answers[3],
+          q5: answers[4],
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || 'Something went wrong. Please try again.');
       setStatus('success');
       setStep(6);
     } catch (err) {
       console.error(err);
       setStatus('error');
-      setErrorMsg('Something went wrong. Please try again.');
+      setErrorMsg(err?.message || 'Something went wrong. Please try again.');
     }
   }
 
@@ -1138,27 +1169,44 @@ function FinalCTA() {
   );
 }
 
-/* ---------- Section 9: Footer ---------- */
+/* ---------- Section 9: Footer (light bg) ---------- */
 function Footer() {
   return (
-    <footer id="contact" className="px-6 md:px-10 py-8" style={{ background: '#003049', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <footer
+      id="contact"
+      className="px-6 md:px-10 py-10"
+      style={{ background: '#F2FBFB', borderTop: '1px solid #D7EDEE' }}
+    >
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
         <div className="flex items-center gap-4">
-          <Logo variant="dark" />
-          <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <Logo variant="light" size="md" />
+          <span className="text-[12px]" style={{ color: '#64748B' }}>
             © 2026 VeriSeek · Truth you can act on.
           </span>
         </div>
-        <ul className="flex flex-wrap items-center gap-4 text-[12px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+        <ul
+          className="flex flex-wrap items-center gap-4 text-[12px]"
+          style={{ color: '#64748B' }}
+        >
+          <li>
+            <a href="#" className="hover:text-[#003049] transition-colors">About</a>
+          </li>
           <li aria-hidden>·</li>
-          <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+          <li>
+            <a href="#" className="hover:text-[#003049] transition-colors">Privacy Policy</a>
+          </li>
           <li aria-hidden>·</li>
-          <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+          <li>
+            <a href="#" className="hover:text-[#003049] transition-colors">Terms of Service</a>
+          </li>
           <li aria-hidden>·</li>
-          <li><a href="#contact" className="hover:text-white transition-colors">Contact</a></li>
+          <li>
+            <a href="#contact" className="hover:text-[#003049] transition-colors">Contact</a>
+          </li>
         </ul>
-        <div className="text-[12px] font-semibold" style={{ color: '#01B5B6' }}>veriseek.ai</div>
+        <div className="text-[13px] font-semibold" style={{ color: '#01B5B6' }}>
+          veriseek.ai
+        </div>
       </div>
     </footer>
   );
@@ -1173,8 +1221,8 @@ function App() {
       <Hero />
       <StatsStrip />
       <ProblemList />
-      <WhyVeriSeek />
       <SurveySection />
+      <WhyVeriSeek />
       <TrustSection />
       <FinalCTA />
       <Footer />
