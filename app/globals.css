@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 180 99% 36%;
+    --radius: 0.5rem;
+  }
+  html { scroll-behavior: smooth; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    color: #1A1A2E;
+    background: #FFFFFF;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  * { box-sizing: border-box; }
+}
+
+.font-serif-display { font-family: 'DM Serif Display', Georgia, serif; }
+
+/* Pulsing hero dot */
+@keyframes vs-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.75); }
+}
+.vs-pulse { animation: vs-pulse 2s infinite ease-in-out; }
+
+/* Scroll fade-up */
+.vs-fade { opacity: 0; transform: translateY(24px); transition: opacity 500ms ease, transform 500ms ease; }
+.vs-fade.vs-in { opacity: 1; transform: translateY(0); }
+
+/* Checkmark draw */
+@keyframes vs-draw {
+  to { stroke-dashoffset: 0; }
+}
+.vs-check-path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: vs-draw 700ms ease-out forwards;
+}
+.vs-check-circle {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  animation: vs-draw 700ms ease-out forwards;
+}
+
+/* Survey question in/out transitions */
+.vs-q-in  { opacity: 1; transform: translateY(0); transition: opacity 200ms ease 150ms, transform 200ms ease 150ms; }
+.vs-q-out { opacity: 0; transform: translateY(-12px); transition: opacity 150ms ease, transform 150ms ease; }
+
+/* Teal button hover / active */
+.vs-btn-teal { background: #01B5B6; color: #fff; transition: background 180ms ease, transform 120ms ease, box-shadow 180ms ease; }
+.vs-btn-teal:hover:not(:disabled) { background: #009899; }
+.vs-btn-teal:active:not(:disabled) { transform: scale(0.98); }
+.vs-btn-teal:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Card hover */
+.vs-card { transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease; }
+.vs-card:hover { transform: translateY(-3px); border-color: #01B5B6; }
+
+/* Progress glow */
+.vs-progress-active { box-shadow: 0 0 10px rgba(1,181,182,0.55); }
+
+/* Nav scroll shadow */
+.vs-nav-scrolled { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 2px 20px rgba(0,0,0,0.15); }
+
+/* Remove autofill yellow on dark inputs */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #ffffff;
+}
