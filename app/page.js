@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 /* ---------- Shared ---------- */
@@ -161,6 +162,7 @@ function Nav() {
 
 /* ---------- Reusable Glass Email Form ---------- */
 function EmailCTA({ placeholder, buttonLabel, source, tone = 'dark', successMsg }) {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | success | duplicate | error | invalid
   const [message, setMessage] = useState('');
@@ -188,10 +190,14 @@ function EmailCTA({ placeholder, buttonLabel, source, tone = 'dark', successMsg 
       if (data.duplicate) {
         setStatus('duplicate');
         setMessage(data.message || "You're already on the list!");
+        // Still navigate to thank-you so Meta Pixel Lead event fires for the conversion
+        setTimeout(() => router.push('/thank-you'), 800);
         return;
       }
       setStatus('success');
       setMessage(successMsg || "You're on the list! We'll be in touch at launch.");
+      // Redirect to thank-you page so the Meta Pixel can track the conversion
+      router.push('/thank-you');
     } catch (err) {
       console.error(err);
       setStatus('error');
@@ -708,6 +714,7 @@ const QUESTIONS = [
 ];
 
 function SurveySection() {
+  const router = useRouter();
   // step: 0..4 = questions, 5 = email, 6 = success
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState([null, null, null, null, null]);
@@ -759,7 +766,8 @@ function SurveySection() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || 'Something went wrong. Please try again.');
       setStatus('success');
-      setStep(6);
+      // Redirect to dedicated /thank-you page so Meta Pixel can fire the Lead conversion
+      router.push('/thank-you');
     } catch (err) {
       console.error(err);
       setStatus('error');
