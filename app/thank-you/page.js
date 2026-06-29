@@ -208,7 +208,7 @@ export default function ThankYouPage() {
           ← Back to homepage
         </Link>
         <a
-          href="https://veriseek.ai"
+          href={process.env.NEXT_PUBLIC_SITE_URL || 'https://veriseek.ai'}
           className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold transition-colors"
           style={{
             border: '1px solid rgba(255,255,255,0.2)',

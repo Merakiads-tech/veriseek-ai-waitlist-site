@@ -5,7 +5,10 @@ export const metadata = {
   title: 'VeriSeek — Truth you can act on',
   description:
     'VeriSeek is an AI-powered review verification platform. Join the waitlist for early access.',
-  metadataBase: new URL('https://join-veriseek.preview.emergentagent.com'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL ||
+      'https://join-veriseek.preview.emergentagent.com'
+  ),
   openGraph: {
     title: 'VeriSeek — Truth you can act on',
     description:
